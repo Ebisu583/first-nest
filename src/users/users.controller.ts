@@ -6,6 +6,7 @@ import {
   Body,
   Delete,
   Put,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { ExternalUserDto } from 'src/users/dto/external.user.dto';
@@ -19,7 +20,9 @@ export class UsersController {
   constructor(private userRepository: UsersDataService) {}
 
   @Get(':id')
-  getUserById(@Param('id') _id_: string): ExternalUserDto {
+  getUserById(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) _id_: string,
+  ): ExternalUserDto {
     return this.mapUserToExternal(this.userRepository.getItemById(_id_));
   }
 
@@ -42,7 +45,7 @@ export class UsersController {
 
   @Put(':id')
   updateUser(
-    @Param('id') _id_: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) _id_: string,
     @Body() userDto: UpdateUserDto,
   ): ExternalUserDto {
     return this.mapUserToExternal(

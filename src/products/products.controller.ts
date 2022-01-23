@@ -6,6 +6,7 @@ import {
   Body,
   Delete,
   Put,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ExternalProductDto } from './dto/external-product.dto';
@@ -19,7 +20,9 @@ export class ProductsController {
   constructor(private productRepository: ProductsDataService) {}
 
   @Get(':id')
-  getProductById(@Param('id') _id_: string): ExternalProductDto {
+  getProductById(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) _id_: string,
+  ): ExternalProductDto {
     return this.mapProductToExternal(this.productRepository.getItemById(_id_));
   }
 
@@ -42,7 +45,7 @@ export class ProductsController {
 
   @Put(':id')
   updateProduct(
-    @Param('id') _id_: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) _id_: string,
     @Body() productDto: UpdateProductDto,
   ): ExternalProductDto {
     return this.mapProductToExternal(

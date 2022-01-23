@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from 'src/users/interfaces/user.interface';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UsersDataService {
@@ -33,7 +34,7 @@ export class UsersDataService {
   }
   addItem(item: CreateUserDto): User {
     const newUser: User = {
-      id: Math.random().toString().substring(2),
+      id: uuidv4(),
       createdAt: new Date(),
       updatedAt: new Date(),
       ...item,

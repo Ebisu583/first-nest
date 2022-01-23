@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Product } from './interfaces/product.interface';
-import shortid from 'shortid';
+import { v4 as uuidv4 } from 'uuid';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
@@ -35,7 +35,7 @@ export class ProductsDataService {
   }
   addItem(item: CreateProductDto): Product {
     const newProduct: Product = {
-      id: Math.random().toString().substring(2),
+      id: uuidv4(),
       createdAt: new Date(),
       updatedAt: new Date(),
       ...item,
