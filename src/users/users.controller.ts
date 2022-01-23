@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { ExternalUserDto } from 'src/users/dto/external.user.dto';
@@ -14,10 +15,14 @@ import { UsersDataService } from './users-data.service';
 import { User } from 'src/users/interfaces/user.interface';
 import { dateToArray } from 'src/shared/helpers/date.helper';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { UserValidatorService } from './user-validator.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private userRepository: UsersDataService) {}
+  constructor(
+    private userRepository: UsersDataService,
+    private userValidator: UserValidatorService,
+  ) {}
 
   @Get(':id')
   getUserById(
@@ -28,6 +33,7 @@ export class UsersController {
 
   @Post()
   addUser(@Body() _user_: CreateUserDto): ExternalUserDto {
+    this.userValidator.validateUniqueEmail(_user_.email);
     return this.mapUserToExternal(this.userRepository.addItem(_user_));
   }
 

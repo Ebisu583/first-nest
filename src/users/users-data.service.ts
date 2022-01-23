@@ -21,6 +21,9 @@ export class UsersDataService {
   findUserByName(name: string): User {
     return this.users.find((user) => user.name == name);
   }
+  findUserByEmail(email: string): User {
+    return this.users.find((user) => user.email == email);
+  }
   deleteItem(id: string): boolean {
     const user = this.users.find((user) => user.id == id);
     if (user) {
