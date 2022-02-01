@@ -1,4 +1,3 @@
-import { Tags } from '../enums/tags.enum';
 import {
   Min,
   Max,
@@ -21,5 +20,5 @@ export class UpdateProductDto {
   count: number;
   @IsEnum({ each: true })
   @IsArray()
-  tags: Array<Tags>;
+  tags: Array<string>;
 }

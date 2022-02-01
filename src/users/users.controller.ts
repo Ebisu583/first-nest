@@ -12,7 +12,7 @@ import {
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { ExternalUserDto } from 'src/users/dto/external.user.dto';
 import { UsersDataService } from './users-data.service';
-import { User } from 'src/users/interfaces/user.interface';
+import { User } from './db/users.entity';
 import { dateToArray } from 'src/shared/helpers/date.helper';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { UserValidatorService } from './user-validator.service';
@@ -25,37 +25,39 @@ export class UsersController {
   ) {}
 
   @Get(':id')
-  getUserById(
+  async getUserById(
     @Param('id', new ParseUUIDPipe({ version: '4' })) _id_: string,
-  ): ExternalUserDto {
-    return this.mapUserToExternal(this.userRepository.getItemById(_id_));
+  ): Promise<ExternalUserDto> {
+    return this.mapUserToExternal(await this.userRepository.getUserById(_id_));
   }
 
   @Post()
-  addUser(@Body() _user_: CreateUserDto): ExternalUserDto {
-    this.userValidator.validateUniqueEmail(_user_.email);
-    return this.mapUserToExternal(this.userRepository.addItem(_user_));
+  async addUser(@Body() _user_: CreateUserDto): Promise<ExternalUserDto> {
+    await this.userValidator.validateUniqueEmail(_user_.email);
+    console.log(_user_);
+    
+    return this.mapUserToExternal(await this.userRepository.addUser(_user_));
   }
 
   @Get()
-  getAllUsers(): Array<ExternalUserDto> {
-    return this.userRepository
-      .getAllItems()
-      .map((user) => this.mapUserToExternal(user));
+  async getAllUsers(): Promise<Array<ExternalUserDto>> {
+    return (await this.userRepository.getAllUsers()).map((user) =>
+      this.mapUserToExternal(user),
+    );
   }
 
   @Delete(':id')
-  deleteUserById(@Param('id') _id_: string): void {
-    this.userRepository.deleteItem(_id_);
+  async deleteUserById(@Param('id') _id_: string): Promise<void> {
+    await this.userRepository.deleteUser(_id_);
   }
 
   @Put(':id')
-  updateUser(
+  async updateUser(
     @Param('id', new ParseUUIDPipe({ version: '4' })) _id_: string,
     @Body() userDto: UpdateUserDto,
-  ): ExternalUserDto {
+  ): Promise<ExternalUserDto> {
     return this.mapUserToExternal(
-      this.userRepository.updateItem(_id_, userDto),
+      await this.userRepository.updateUser(_id_, userDto),
     );
   }
 

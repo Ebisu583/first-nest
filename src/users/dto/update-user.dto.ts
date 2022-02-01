@@ -8,11 +8,12 @@ import {
   IsNumber,
   IsEnum,
 } from 'class-validator';
+import { User } from '../db/users.entity';
 
 export class UpdateUserDto {
   @ValidateNested({ each: true })
-  @Type(() => UserAddress)
-  address: Array<UserAddress>;
+  @Type(() => UpdateUserAddressDto)
+  address: Array<UpdateUserAddressDto>;
   @IsNotEmpty()
   name: string;
   @IsNotEmpty()
@@ -26,7 +27,9 @@ export class UpdateUserDto {
   role: Roles;
 }
 
-class UserAddress {
+export class UpdateUserAddressDto {
+  @IsNotEmpty()
+  id: string;
   @IsNotEmpty()
   country: string;
   @IsNotEmpty()
@@ -38,4 +41,5 @@ class UserAddress {
   number: number;
   @IsNumber()
   aptNumber?: number;
+  // user: UpdateUserDto;
 }

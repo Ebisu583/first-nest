@@ -9,6 +9,7 @@ export const dateToArray = (date: Date): Array<number> => {
   ];
 };
 
-export const arrayToDate = (array: Array<number>): Date => {
-  return new Date(array[0], array[1], array[2], array[3], array[4], array[5]);
+export const arrayToDate = (array: any): Date => {
+  const birth = array.value;
+  return new Date(birth[0], birth[1], birth[2], birth[3], birth[4], birth[5]);
 };

@@ -1,7 +1,7 @@
 import { Roles } from '../../shared/enums/roles.enum';
 
 export interface ExternalUserDto {
-  address: Array<UserAddress>;
+  address?: Array<UserAddress>;
   id: string;
   name: string;
   lastName: string;

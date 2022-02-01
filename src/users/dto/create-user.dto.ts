@@ -11,8 +11,8 @@ import {
 
 export class CreateUserDto {
   @ValidateNested({ each: true })
-  @Type(() => UserAddress)
-  address: Array<UserAddress>;
+  @Type(() => CreateUserAddressDto)
+  address: Array<CreateUserAddressDto>;
   @IsNotEmpty()
   name: string;
   @IsNotEmpty()
@@ -26,7 +26,7 @@ export class CreateUserDto {
   role: Roles;
 }
 
-class UserAddress {
+export class CreateUserAddressDto {
   @IsNotEmpty()
   country: string;
   @IsNotEmpty()

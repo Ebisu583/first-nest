@@ -1,65 +1,79 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'src/users/interfaces/user.interface';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { User } from './db/users.entity';
+import {
+  CreateUserDto,
+  CreateUserAddressDto,
+} from 'src/users/dto/create-user.dto';
+import {
+  UpdateUserAddressDto,
+  UpdateUserDto,
+} from 'src/users/dto/update-user.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { UserAddress } from './db/user_addresses.entity';
+import { UserRepository } from './db/user.repository';
+import { UserAddressRepository } from './db/user_address.repository';
 
 @Injectable()
 export class UsersDataService {
-  private users: Array<User> = [];
+  constructor(
+    private userRepository: UserRepository,
+    private userAddressRepository: UserAddressRepository,
+  ) {}
 
-  getAllItems(): Array<User> {
-    return this.users;
+  async getAllUsers(): Promise<User[]> {
+    return await this.userRepository.find();
   }
-  getItemById(id: string): User {
-    console.log(id);
-    console.log(this.users);
-    console.log(this.users.find((user) => user.id == id));
+  async getUserById(id: string): Promise<User> {
+    return await this.userRepository.findOne(id);
+  }
+  async getUserByName(name: string): Promise<User> {
+    return await this.userRepository.findUserByName(name);
+  }
+  async getUserByEmail(email: string): Promise<User> {
+    return await this.userRepository.findUserByEmail(email);
+  }
+  async deleteUser(id: string): Promise<void> {
+    await this.userAddressRepository.deleteUserAddressesByUserId(id);
+    await this.userRepository.delete(id);
+  }
+  async addUser(item: CreateUserDto): Promise<User> {
+    const userToSave = new User();
+    userToSave.name = item.name;
+    userToSave.lastName = item.lastName;
+    userToSave.email = item.email;
+    userToSave.birth = item.birth;
+    userToSave.role = item.role;
+    userToSave.address = await this.prepareUserAddressesToSave(item.address);
 
-    return this.users.find((user) => user.id == id);
+    return await this.userRepository.save(userToSave);
   }
-  findUserByName(name: string): User {
-    return this.users.find((user) => user.name == name);
+
+  async updateUser(id: string, item: UpdateUserDto): Promise<User> {
+    const userToUpdate = await this.getUserById(id);
+    userToUpdate.name = item.name;
+    userToUpdate.lastName = item.lastName;
+    userToUpdate.email = item.email;
+    userToUpdate.birth = item.birth;
+    userToUpdate.role = item.role;
+    userToUpdate.address = await this.prepareUserAddressesToSave(item.address);
+
+    return await this.userRepository.save(userToUpdate);
   }
-  findUserByEmail(email: string): User {
-    return this.users.find((user) => user.email == email);
-  }
-  deleteItem(id: string): boolean {
-    const user = this.users.find((user) => user.id == id);
-    if (user) {
-      const usersIds = this.users.map((user) => user.id);
-      const indexToDelete = usersIds.indexOf(id);
-      this.users.splice(indexToDelete, 1);
-      return true;
-    } else {
-      return false;
+  async prepareUserAddressesToSave(
+    address: CreateUserAddressDto[] | UpdateUserAddressDto[],
+  ): Promise<UserAddress[]> {
+    const addresses: UserAddress[] = [];
+    for (const add of address) {
+      const addressToSave = new UserAddress();
+
+      addressToSave.country = add.country;
+      addressToSave.city = add.city;
+      addressToSave.street = add.street;
+      addressToSave.number = add.number;
+
+      addresses.push(await this.userAddressRepository.save(addressToSave));
     }
-  }
-  addItem(item: CreateUserDto): User {
-    const newUser: User = {
-      id: uuidv4(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ...item,
-    };
-    this.users.push(newUser);
-    return newUser;
-  }
 
-  updateItem(id: string, item: UpdateUserDto): User {
-    this.users = this.users.map((i) => {
-      if (i.id === id) {
-        return {
-          ...item,
-          id: i.id,
-          createdAt: i.createdAt,
-          updatedAt: new Date(),
-        };
-      }
-
-      return i;
-    });
-
-    return this.getItemById(id);
+    return addresses;
   }
 }
