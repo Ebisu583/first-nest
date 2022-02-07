@@ -29,6 +29,10 @@ export class Product {
     default: 1,
   })
   count: number;
+  @Column({
+    nullable: true,
+  })
+  description: 'text';
 
   @ManyToMany((type) => Tag)
   @JoinTable({

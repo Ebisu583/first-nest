@@ -12,12 +12,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { UserAddress } from './db/user_addresses.entity';
 import { UserRepository } from './db/user.repository';
 import { UserAddressRepository } from './db/user_address.repository';
+import { Connection, EntityManager } from 'typeorm';
 
 @Injectable()
 export class UsersDataService {
   constructor(
     private userRepository: UserRepository,
     private userAddressRepository: UserAddressRepository,
+    private connection: Connection,
   ) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -37,30 +39,43 @@ export class UsersDataService {
     await this.userRepository.delete(id);
   }
   async addUser(item: CreateUserDto): Promise<User> {
-    const userToSave = new User();
-    userToSave.name = item.name;
-    userToSave.lastName = item.lastName;
-    userToSave.email = item.email;
-    userToSave.birth = item.birth;
-    userToSave.role = item.role;
-    userToSave.address = await this.prepareUserAddressesToSave(item.address);
+    return this.connection.transaction(async (manager: EntityManager) => {
+      const userToSave = new User();
+      userToSave.name = item.name;
+      userToSave.lastName = item.lastName;
+      userToSave.email = item.email;
+      userToSave.birth = item.birth;
+      userToSave.role = item.role;
+      userToSave.address = await this.prepareUserAddressesToSave(
+        item.address,
+        manager.getCustomRepository(UserAddressRepository),
+      );
 
-    return await this.userRepository.save(userToSave);
+      return await manager.getCustomRepository(UserRepository).save(userToSave);
+    });
   }
 
   async updateUser(id: string, item: UpdateUserDto): Promise<User> {
-    const userToUpdate = await this.getUserById(id);
-    userToUpdate.name = item.name;
-    userToUpdate.lastName = item.lastName;
-    userToUpdate.email = item.email;
-    userToUpdate.birth = item.birth;
-    userToUpdate.role = item.role;
-    userToUpdate.address = await this.prepareUserAddressesToSave(item.address);
+    return this.connection.transaction(async (manager: EntityManager) => {
+      const userToUpdate = await this.getUserById(id);
+      userToUpdate.name = item.name;
+      userToUpdate.lastName = item.lastName;
+      userToUpdate.email = item.email;
+      userToUpdate.birth = item.birth;
+      userToUpdate.role = item.role;
+      userToUpdate.address = await this.prepareUserAddressesToSave(
+        item.address,
+        manager.getCustomRepository(UserAddressRepository),
+      );
 
-    return await this.userRepository.save(userToUpdate);
+      return await manager
+        .getCustomRepository(UserRepository)
+        .save(userToUpdate);
+    });
   }
   async prepareUserAddressesToSave(
     address: CreateUserAddressDto[] | UpdateUserAddressDto[],
+    managerUserAddressRepository: UserAddressRepository,
   ): Promise<UserAddress[]> {
     const addresses: UserAddress[] = [];
     for (const add of address) {
@@ -71,7 +86,7 @@ export class UsersDataService {
       addressToSave.street = add.street;
       addressToSave.number = add.number;
 
-      addresses.push(await this.userAddressRepository.save(addressToSave));
+      addresses.push(await managerUserAddressRepository.save(addressToSave));
     }
 
     return addresses;
