@@ -1,0 +1,5 @@
+export enum Statuses {
+  NEW_ORDER = 'NEW_ORDER',
+  COMPLETED_ORDER = 'COMPLETED_ORDER',
+  SENT_ORDER = 'SENT_ORDER',
+}

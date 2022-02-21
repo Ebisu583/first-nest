@@ -1,3 +1,4 @@
+import { OrderedProduct } from 'src/orders/db/ordered-product.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Tag } from './tag.entity';
 
@@ -33,6 +35,9 @@ export class Product {
     nullable: true,
   })
   description: 'text';
+
+  @OneToMany(() => OrderedProduct, (orderedProduct) => orderedProduct.product)
+  orderedProducts?: OrderedProduct[];
 
   @ManyToMany((type) => Tag)
   @JoinTable({
