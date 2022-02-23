@@ -33,17 +33,15 @@ export class Order {
   })
   status: Statuses;
 
-  @OneToMany(() => OrderedProduct, (orderedProduct) => orderedProduct.order)
+  @OneToMany(() => OrderedProduct, (orderedProduct) => orderedProduct.order, {
+    eager: true,
+  })
   orderedProducts?: OrderedProduct[];
 
-  @ManyToOne(() => User, (user) => user.id, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => User, (user) => user.id)
   user: User;
 
-  @ManyToOne(() => UserAddress, (userAddress) => userAddress.id, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => UserAddress, (userAddress) => userAddress.id)
   userAddress: UserAddress;
 
   @CreateDateColumn({ type: 'timestamp' })

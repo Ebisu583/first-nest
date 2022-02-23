@@ -30,7 +30,7 @@ export class OrderedProduct {
   @ManyToOne(() => Product, (product) => product.id)
   product: Product;
 
-  @ManyToOne(() => Order, (order) => order.id)
+  @ManyToOne(() => Order, (order) => order.id, { onDelete: 'CASCADE' })
   order: Order;
 
   @CreateDateColumn({ type: 'timestamp' })

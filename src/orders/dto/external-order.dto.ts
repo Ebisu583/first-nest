@@ -2,10 +2,13 @@ import { Statuses } from '../shared/enums/statuses.enum';
 import { ExternalOrderedProductDto } from './external-ordered-product.dto';
 
 export class ExternalOrderDto {
+  id: string;
   orderedProducts: Array<ExternalOrderedProductDto>;
   addInfo: string;
-  status: Statuses = Statuses.NEW_ORDER;
-  user: number;
+  status: Statuses;
+  user: string;
   totalPrice: number;
-  userAddress: number;
+  userAddress: string;
+  createdAt: Array<number>;
+  updatedAt: Array<number>;
 }

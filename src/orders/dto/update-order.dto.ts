@@ -13,12 +13,12 @@ export class UpdateOrderDto {
   @IsEnum(Statuses)
   status: Statuses = Statuses.NEW_ORDER;
 
-  @IsNumber()
-  user: number;
+  @IsNotEmpty()
+  userId: string;
 
   @IsNumber()
   totalPrice: number;
 
-  @IsNumber()
-  userAddress: number;
+  @IsNotEmpty()
+  userAddressId: string;
 }

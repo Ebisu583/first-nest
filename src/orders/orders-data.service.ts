@@ -6,10 +6,10 @@ import { OrderRepository } from './db/order.repository';
 import { OrderedProductRepository } from './db/ordered-product.repository';
 import { OrderedProduct } from './db/ordered-product.entity';
 import { Connection, EntityManager } from 'typeorm';
-import { Product } from 'src/products/db/product.entity';
-import { ProductRepository } from 'src/products/db/product.repository';
-import { User } from 'src/users/db/users.entity';
-import { UserAddress } from 'src/users/db/user_addresses.entity';
+import { Product } from '../products/db/product.entity';
+import { ProductRepository } from '../products/db/product.repository';
+import { User } from '../users/db/users.entity';
+import { UserAddress } from '../users/db/user_addresses.entity';
 import { UpdateOrderedProductDto } from './dto/update-ordered-product.dto';
 import { CreateOrderedProductDto } from './dto/create-ordered-product.dto';
 
@@ -40,7 +40,7 @@ export class OrdersDataService {
         manager.getCustomRepository(OrderedProductRepository),
       );
       return await manager
-        .getCustomRepository(ProductRepository)
+        .getCustomRepository(OrderRepository)
         .save(orderToSave);
     });
   }
@@ -56,8 +56,9 @@ export class OrdersDataService {
 
       orderedProductToSave.orderingPrice = item.orderingPrice;
       orderedProductToSave.unitAmount = item.unitAmount;
-      orderedProductToSave.product = new Product();
-      orderedProductToSave.product.id = item.productId;
+      orderedProductToSave.product = await this.productRepository.findOne(
+        item.productId,
+      );
 
       orderedProducts.push(
         await managerOrderedProductRepository.save(orderedProductToSave),
@@ -66,33 +67,36 @@ export class OrdersDataService {
     return orderedProducts;
   }
 
-  async deleteProduct(id: string): Promise<void> {
-    await this.productRepository.delete(id);
+  async deleteOrder(id: string): Promise<void> {
+    await this.orderRepository.delete(id);
   }
 
-  async updateProduct(id: string, item: UpdateProductDto): Promise<Product> {
+  async updateOrder(id: string, item: UpdateOrderDto): Promise<Order> {
     return this.connection.transaction(async (manager: EntityManager) => {
-      const tags: Tag[] = await this.tagRepository.findTagsByName(item.tags);
-      const productToUpdate = await this.getProductById(id);
+      const orderToUpdate = await this.getOrderById(id);
 
-      productToUpdate.name = item.name;
-      productToUpdate.price = item.price;
-      productToUpdate.count = item.count;
-      productToUpdate.tags = tags;
+      orderToUpdate.addInfo = item.addInfo;
+      orderToUpdate.status = item.status;
+      orderToUpdate.user = new User();
+      orderToUpdate.user.id = item.userId;
+      orderToUpdate.userAddress = new UserAddress();
+      orderToUpdate.userAddress.id = item.userAddressId;
+      await this.orderedProductRepository.deleteProductOrderByOrderId(id);
+      orderToUpdate.orderedProducts = await this.preparedOrderedProductsToSave(
+        item.orderedProducts,
+        manager.getCustomRepository(OrderedProductRepository),
+      );
+      await manager.getCustomRepository(OrderRepository).save(orderToUpdate);
 
-      await manager
-        .getCustomRepository(ProductRepository)
-        .save(productToUpdate);
-
-      return await this.getProductById(id);
+      return await this.getOrderById(id);
     });
   }
 
-  async getProductById(id: string): Promise<Product> {
-    return await this.productRepository.findOne(id);
+  async getOrderById(id: string): Promise<Order> {
+    return await this.orderRepository.findOne(id);
   }
 
-  async getAllProducts(): Promise<Product[]> {
-    return await this.productRepository.find();
+  async getAllOrders(): Promise<Order[]> {
+    return await this.orderRepository.find();
   }
 }
