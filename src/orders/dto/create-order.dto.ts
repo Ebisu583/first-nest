@@ -1,41 +1,24 @@
 import { Statuses } from '../shared/enums/statuses.enum';
-import { Transform, Type } from 'class-transformer';
-import { arrayToDate } from '../../shared/helpers/date.helper';
-import {
-  IsEmail,
-  IsNotEmpty,
-  ValidateNested,
-  IsNumber,
-  IsEnum,
-} from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsNumber, IsEnum } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateOrderedProductDto } from './create-ordered-product.dto';
 
 export class CreateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOrderedProductDto)
-  address: Array<CreateOrderedProductDto>;
+  orderedProducts: Array<CreateOrderedProductDto>;
   @IsNotEmpty()
   addInfo: string;
 
   @IsEnum(Statuses)
   status: Statuses = Statuses.NEW_ORDER;
 
-  @IsNumber()
-  userId: number;
+  @IsNotEmpty()
+  userId: string;
 
   @IsNumber()
-  userAddressId: number;
-}
+  totalPrice: number;
 
-export class CreateUserAddressDto {
   @IsNotEmpty()
-  country: string;
-  @IsNotEmpty()
-  city: string;
-  @IsNotEmpty()
-  street: string;
-  @IsNotEmpty()
-  @IsNumber()
-  number: number;
-  @IsNumber()
-  aptNumber?: number;
+  userAddressId: string;
 }

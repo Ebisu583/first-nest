@@ -12,6 +12,7 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { OrdersModule } from './orders/orders.module';
 import * as cors from 'cors';
 
 @Module({
@@ -19,6 +20,7 @@ import * as cors from 'cors';
     ProductsModule,
     UsersModule,
     TypeOrmModule.forRoot(config as ConnectionOptions),
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
