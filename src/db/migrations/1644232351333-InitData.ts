@@ -4,8 +4,9 @@ import { getRepository, MigrationInterface } from 'typeorm';
 import * as faker from 'faker';
 import { User } from 'src/users/db/users.entity';
 import { Roles } from 'src/shared/enums/roles.enum';
+import { UserAddress } from 'src/users/db/user_addresses.entity';
 
-export class InitData1644232351356 implements MigrationInterface {
+export class InitData1644232351333 implements MigrationInterface {
   public async down(): Promise<any> {
     throw new Error('Method not implemented.');
   }
@@ -70,6 +71,15 @@ export class InitData1644232351356 implements MigrationInterface {
       userToSave.role = Roles.ADMIN;
       console.log(userToSave);
       usersArr.push(await getRepository('User').save(userToSave));
+      for (let i = 0; i < 10; i++) {
+        const userAddressToSave = new UserAddress();
+        userAddressToSave.country = faker.address.country();
+        userAddressToSave.city = faker.address.city();
+        userAddressToSave.street = faker.address.streetName();
+        userAddressToSave.number = faker.datatype.number();
+        userAddressToSave.user = userToSave;
+        await getRepository('UserAddress').save(userAddressToSave);
+      }
     }
 
     console.log('Users saved');

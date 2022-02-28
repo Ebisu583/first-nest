@@ -68,7 +68,6 @@ export class OrdersController {
       orderedProducts: order.orderedProducts.map((orderedProduct) => {
         return {
           ...orderedProduct,
-          order: orderedProduct.order.id,
           product: orderedProduct.product.id,
           createdAt: dateToArray(orderedProduct.createdAt),
           updatedAt: dateToArray(orderedProduct.updatedAt),
