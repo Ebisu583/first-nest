@@ -6,6 +6,7 @@ import { TagRepository } from './db/tag.repository';
 import { ProductRepository } from './db/product.repository';
 import { Tag } from './db/tag.entity';
 import { Connection, EntityManager } from 'typeorm';
+import { ProductsQuery } from './queries/products-query.interface';
 
 @Injectable()
 export class ProductsDataService {
@@ -55,7 +56,7 @@ export class ProductsDataService {
     return await this.productRepository.findOne(id);
   }
 
-  async getAllProducts(): Promise<Product[]> {
-    return await this.productRepository.find();
+  async getAllProducts(query: ProductsQuery): Promise<Product[]> {
+    return await this.productRepository.findAll(query);
   }
 }

@@ -99,4 +99,37 @@ export class OrdersDataService {
   async getAllOrders(): Promise<Order[]> {
     return await this.orderRepository.find();
   }
+  async addProductToOrder(
+    orderId: string,
+    createOrderedProductDto: CreateOrderedProductDto,
+    product: Product,
+  ): Promise<OrderedProduct> {
+    const orderedProductToSave = new OrderedProduct();
+    orderedProductToSave.orderingPrice = createOrderedProductDto.orderingPrice;
+    orderedProductToSave.unitAmount = createOrderedProductDto.unitAmount;
+    orderedProductToSave.product = product;
+    orderedProductToSave.order = await this.getOrderById(orderId);
+    await this.orderedProductRepository.save(orderedProductToSave);
+    return orderedProductToSave;
+  }
+  async deleteProductToOrder(orderedProductId: string): Promise<void> {
+    await this.orderedProductRepository.delete(orderedProductId);
+  }
+  async updateUserAddress(
+    orderId: string,
+    newAddressId: string,
+  ): Promise<Order> {
+    await this.orderRepository.update(
+      {
+        id: orderId,
+      },
+      {
+        userAddress: {
+          id: newAddressId,
+        },
+      },
+    );
+
+    return this.orderRepository.findOne(orderId);
+  }
 }

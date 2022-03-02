@@ -8,11 +8,11 @@ import {
   UpdateUserAddressDto,
   UpdateUserDto,
 } from 'src/users/dto/update-user.dto';
-import { v4 as uuidv4 } from 'uuid';
 import { UserAddress } from './db/user_addresses.entity';
 import { UserRepository } from './db/user.repository';
 import { UserAddressRepository } from './db/user_address.repository';
 import { Connection, EntityManager } from 'typeorm';
+import { UsersQuery } from './queries/user-query.interface';
 
 @Injectable()
 export class UsersDataService {
@@ -22,8 +22,8 @@ export class UsersDataService {
     private connection: Connection,
   ) {}
 
-  async getAllUsers(): Promise<User[]> {
-    return await this.userRepository.find();
+  async getAllUsers(query: UsersQuery): Promise<User[]> {
+    return await this.userRepository.findAll(query);
   }
   async getUserById(id: string): Promise<User> {
     return await this.userRepository.findOne(id);

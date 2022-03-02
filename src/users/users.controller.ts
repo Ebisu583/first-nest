@@ -7,7 +7,7 @@ import {
   Delete,
   Put,
   ParseUUIDPipe,
-  UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { ExternalUserDto } from 'src/users/dto/external.user.dto';
@@ -16,6 +16,7 @@ import { User } from './db/users.entity';
 import { dateToArray } from 'src/shared/helpers/date.helper';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { UserValidatorService } from './user-validator.service';
+import { UsersQuery } from './queries/user-query.interface';
 
 @Controller('users')
 export class UsersController {
@@ -35,13 +36,14 @@ export class UsersController {
   async addUser(@Body() _user_: CreateUserDto): Promise<ExternalUserDto> {
     await this.userValidator.validateUniqueEmail(_user_.email);
     console.log(_user_);
-    
     return this.mapUserToExternal(await this.userRepository.addUser(_user_));
   }
 
   @Get()
-  async getAllUsers(): Promise<Array<ExternalUserDto>> {
-    return (await this.userRepository.getAllUsers()).map((user) =>
+  async getAllUsers(
+    @Query() query: UsersQuery,
+  ): Promise<Array<ExternalUserDto>> {
+    return (await this.userRepository.getAllUsers(query)).map((user) =>
       this.mapUserToExternal(user),
     );
   }

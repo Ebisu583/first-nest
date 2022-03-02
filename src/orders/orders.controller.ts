@@ -7,7 +7,7 @@ import {
   Delete,
   Put,
   ParseUUIDPipe,
-  UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ExternalOrderDto } from './dto/external-order.dto';
@@ -15,10 +15,17 @@ import { OrdersDataService } from './orders-data.service';
 import { Order } from './db/order.entity';
 import { dateToArray } from 'src/shared/helpers/date.helper';
 import { UpdateOrderDto } from 'src/orders/dto/update-order.dto';
+import { CreateOrderedProductDto } from './dto/create-ordered-product.dto';
+import { ExternalOrderedProductDto } from './dto/external-ordered-product.dto';
+import { OrderedProduct } from './db/ordered-product.entity';
+import { ProductsDataService } from 'src/products/products-data.service';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private orderRepository: OrdersDataService) {}
+  constructor(
+    private orderRepository: OrdersDataService,
+    private productRepository: ProductsDataService,
+  ) {}
 
   @Get(':id')
   async getOrderById(
@@ -56,6 +63,51 @@ export class OrdersController {
     return this.mapOrderToExternal(
       await this.orderRepository.updateOrder(_id_, orderDto),
     );
+  }
+  @Patch(':id/products')
+  async addProductToOrder(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() createOrderProductsDto: CreateOrderedProductDto,
+  ): Promise<ExternalOrderedProductDto> {
+    const productId = createOrderProductsDto.productId;
+    const product = this.productRepository.getProductById(productId);
+    return this.mapToExternalOrderProduct(
+      await this.orderRepository.addProductToOrder(
+        id,
+        createOrderProductsDto,
+        await product,
+      ),
+    );
+  }
+  @Patch(':orderId/:userAddressId')
+  async updateUserAddress(
+    @Param(':orderId', new ParseUUIDPipe({ version: '4' })) orderId: string,
+    @Param(':userAddressId', new ParseUUIDPipe({ version: '4' }))
+    userAddressId: string,
+  ): Promise<ExternalOrderDto> {
+    const order = await this.orderRepository.updateUserAddress(
+      orderId,
+      userAddressId,
+    );
+    return this.mapOrderToExternal(order);
+  }
+  @Delete(':id/products/:idOrderProduct')
+  async deleteProductToOrder(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('idOrderProduct', new ParseUUIDPipe({ version: '4' }))
+    idOrderProduct: string,
+  ): Promise<void> {
+    await this.orderRepository.deleteProductToOrder(idOrderProduct);
+  }
+  mapToExternalOrderProduct(
+    orderedProduct: OrderedProduct,
+  ): ExternalOrderedProductDto {
+    return {
+      ...orderedProduct,
+      product: orderedProduct.product.id,
+      createdAt: dateToArray(orderedProduct.createdAt),
+      updatedAt: dateToArray(orderedProduct.updatedAt),
+    };
   }
 
   mapOrderToExternal(order: Order): ExternalOrderDto {
